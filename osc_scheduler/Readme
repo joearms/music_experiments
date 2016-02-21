@@ -1,0 +1,21 @@
+sonic_pi_emulator.erl -- emulates the sonic pi sending OSC messages to port 8104
+osc_scheduler.erl     -- listens for osc commands on port 8104
+synt.erl              -- listens for osc commands on port 6000
+
+The Sonic Pi emulator sends
+
+  <BundleTime> /forward "localhost" 6000 /cmd args ...
+
+  Commands to port 8104
+
+  At <BundleTime> osc_scheduler.erl sends commands to port 6000
+
+  The synt on port 6000 prints the time it receives a command and the command
+  itself
+
+type
+
+   $ make
+
+to run a sumulation
+
