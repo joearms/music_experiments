@@ -1,6 +1,15 @@
+1) start Garage band
 
+> make play
+
+Plays Jerusalem
+
+2) test driver
 
 > make test  -- plays music
+
+3) Connect USB Midi device
+
 > make read  -- reads keyboard
 
 

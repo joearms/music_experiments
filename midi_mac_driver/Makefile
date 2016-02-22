@@ -11,6 +11,8 @@ all: beams midi_event_gen midi_event_listener
 read: all
 	erl -s midi_event_listener start
 
+play: all
+	erl -s midi_player test	
 
 test: all
 	erl -s midi_test test
