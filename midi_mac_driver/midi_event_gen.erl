@@ -5,10 +5,11 @@
 %% 
 
 start() ->
+    Prog = filename:dirname(code:which(?MODULE)) ++ "/midi_event_gen", 
     register(?MODULE, 
 	     spawn(fun() ->
 			   process_flag(trap_exit, true),
-			   Port = open_port({spawn, "./midi_event_gen"}, 
+			   Port = open_port({spawn, Prog},
 					    [{packet, 2}]),
 		     loop(Port)
 		   end)),
