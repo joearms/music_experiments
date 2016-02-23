@@ -1,9 +1,10 @@
 -module(midi_parser).
 -compile(export_all).
 
+info() -> info("rach-pc1-1.mid").
+
 test() ->
     E = parse_file("jerusalem.mid"),
-    %% elib2_misc:dump("jer.tmp", E).
     E.
 
 parse_file(F) ->
@@ -60,6 +61,9 @@ get_event(<<16#FF,16#58,4,NN,DD,CC,BB,Rest/binary>>) ->
     {{timeSig, NN,DD, CC, BB}, Rest};
 get_event(<<16#FF,16#59,2,SF,MI,Rest/binary>>) ->
     {{keySig, SF,MI}, Rest};
+get_event(<<16#FF,16#7F,Len,B:Len/binary,Rest/binary>>) ->
+    io:format("???~p~n",[B]),
+    {{extension,B}, Rest};
 get_event(<<8:4,C:4, K, W, R/binary>>) ->
     {{noteOff, C, K, W}, R};
 get_event(<<9:4,C:4, K, W, R/binary>>) ->
@@ -99,6 +103,30 @@ get_ticks(<<0:1, TicksPerQuarter:15/integer-unsigned>>) ->
     {ticks_per_quarter_note, TicksPerQuarter}.
 
 
+info(F) ->
+    P = parse_file(F),
+    O = [summary(I) || I <- P],
+    O.
+
+
+summary(#{format := _} = X) ->
+    {header, X};
+summary(#{data:=D} ) ->
+    {track, get_elements(D, #{})}.
+
+get_elements([], D) ->
+    D;
+get_elements([{_,E}|T], D) ->
+    Tag = type(E),
+    case maps:find(Tag, D) of
+	error -> get_elements(T, maps:put(Tag, 1, D));
+	{ok, N}->get_elements(T, maps:put(Tag, N+1, D))
+    end.
+	    
+type(X) when is_tuple(X) ->
+    element(1, X);
+type(X) ->
+    X.
 
 
 
