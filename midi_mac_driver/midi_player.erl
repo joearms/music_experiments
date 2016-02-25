@@ -2,10 +2,17 @@
 -compile(export_all).
 
 test() ->
-    midi_event_gen:start(),
+    midi_event_gen:start(external),
     %% play("jerusalem.mid"),
     play("rach-pc1-1.mid"),
     true.
+
+test1() ->
+    midi_event_gen:start(internal),
+    play("jerusalem.mid"),
+    %% play("rach-pc1-1.mid"),
+    true.
+    
 
 play(F) ->
     L = midi_parser:parse_file(F),

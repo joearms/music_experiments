@@ -2,12 +2,27 @@
 
 %% reverse polish music language
 
+%% To do
+%%  add blank as separator
+%%  a' moves up an octave
+%%  a` moves down an octave
+%%  a`- and a-` are obvious the same note
+%%  display music in gtraphic notation
+%%  make editr in browser
+
 -compile(export_all).
 -import(lists, [reverse/1]).
 
+-define(TEMPO, 40).
+
 start() ->
-    midi_event_gen:start(),
+    midi_event_gen:start(internal),
     midi_test:send_notes().
+
+test() ->
+    parse_all_frags(),
+    play_frag("start").
+
 
 parse_all_frags()->
     [preparse_frag(I) || I <- frags()].
@@ -77,6 +92,7 @@ play(Str, E) ->
     io:format("notelist1:~p~n",[L1]),
     L2 = lists:sort(lists:reverse(L1)),
     io:format("notelist2:~p~n",[L2]),
+    file:write_file("notelist2.tmp",[term_to_binary(L2)]), 
     play_live(L2).
 
 play_live([{T1,X}|L1]) ->
@@ -87,14 +103,14 @@ play_live([{Time,X}|T], Time) ->
     event(X),
     play_live(T, Time);
 play_live([{T2,X}|L], T1) ->
-    Delay = (T2-T1)*60,
+    Delay = (T2-T1)*?TEMPO,
     timer:sleep(Delay),
     event(X),
     play_live(L, T2);
 play_live([], _) ->
     [].
 
-event({noteOn, M,V}) ->
+event({noteOn,M,_,V}) ->
     %% io:format("noteOn:~p~n",[M]),
     midi_event_gen:send([144,M,V]);
 event({noteOff, M}) ->
@@ -112,7 +128,7 @@ make_note_list([$s|T], Time, L) ->
     make_note_list(T, Time + 32, L);
 make_note_list([{note,Note,Dur,Vol}|T], Time, L) ->
     Toff = trunc(Dur * 0.8),
-    make_note_list(T, Time + Dur, [{Time, {noteOn, Note, Vol}},
+    make_note_list(T, Time + Dur, [{Time, {noteOn, Note, Dur, Vol}},
 				  {Time+Toff, {noteOff, Note}}|L]);
 make_note_list([{call,S}|T2], Time0, L) ->
     case get({tune,S}) of
@@ -256,7 +272,6 @@ collect_int([H|T], N) when ?IS_DIGIT(H) ->
     collect_int(T, 10*N + H - $0);
 collect_int(T, N) ->
     {N, T}.
-
 
 %% X+ is sharp X- is flat >< up or down an octave
 %% 86421 3/8 changes the time appicable

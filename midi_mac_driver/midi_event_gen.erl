@@ -2,10 +2,9 @@
 
 -compile(export_all).
 
-%% 
-
-start() ->
-    Prog = filename:dirname(code:which(?MODULE)) ++ "/midi_event_gen", 
+start(Type) ->
+    Exec = driver(Type),
+    Prog = filename:dirname(code:which(?MODULE)) ++ Exec,
     register(?MODULE, 
 	     spawn(fun() ->
 			   process_flag(trap_exit, true),
@@ -13,7 +12,10 @@ start() ->
 					    [{packet, 2}]),
 		     loop(Port)
 		   end)),
-    sleep(1500).  %% why since garage band takes a while to start
+    sleep(1500).  %% why since drivers takes a while to start
+
+driver(internal) -> "/midi_synt_driver";
+driver(external) -> "/midi_event_gen".
 
 sleep(T) ->
     receive
